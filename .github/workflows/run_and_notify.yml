@@ -1,0 +1,38 @@
+name: Run Python Script and Notify Slack
+
+on:
+  schedule:
+   - cron: '0 18 * * *' 
+  workflow_dispatch:
+  
+jobs: 
+  run-script: 
+    runs-on: ubuntu-latest 
+    
+    steps: 
+      - name: Checkout Repository 
+        uses: actions/checkout@v2
+        
+      - name: Set up Python 
+        uses: actions/setup-python@v2 
+        with: 
+          python-version: '3.x'  
+          
+      - name: Install Dependencies 
+        run: | 
+          python -m pip install --upgrade pip  
+      
+      - name: Run Python Script  
+        id: run-script 
+        run: | 
+          python validate.py 
+          
+      - name: Notify Slack 
+        if: always() 
+        uses: hpe-hcss/gts-actions-lib/slack-notify@main 
+        with: 
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK_URL }} 
+          message: | 
+            Outcome of the Python script: 
+            ${{ steps.run-script.outputs.log }} 
+          status: ${{ job.status }}
