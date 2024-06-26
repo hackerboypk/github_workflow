@@ -25,14 +25,15 @@ jobs:
       - name: Run Python Script  
         id: run-script 
         run: | 
-          python validation.py 
+          python validation.py | tee script_output.log
           
       - name: Notify Slack 
         if: always() 
-        uses: slackapi/slack-github-action@v1.26.0 
-        env: 
-          slack_webhook: ${{ secrets.SLACK_WEBHOOK_URL }} 
-          message: | 
+        uses: voxmedia/github-action-slack-notify-build@v1 
+        with: 
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }} 
+          status: ${{ job.status }}  
+          fields: job,commit,repo,author 
+          custom_field: | 
             Outcome of the Python script: 
-            ${{ steps.run-script.outputs.log }} 
-          status: ${{ job.status }}
+            $(cat script_output.log)
