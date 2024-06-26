@@ -32,7 +32,8 @@ jobs:
         uses: voxmedia/github-action-slack-notify-build@v1 
         with: 
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }} 
-          status: ${{ job.status }}  
+          status: ${{ job.status }}
+          channel: 'githubAction'
           fields: job,commit,repo,author 
           custom_field: | 
             Outcome of the Python script: 
