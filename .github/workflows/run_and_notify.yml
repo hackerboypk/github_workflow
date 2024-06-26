@@ -11,9 +11,7 @@ jobs:
     steps: 
    
       - name: Any Name Bash Test Step
-        shell: bash
-        run: |
-          echo "${{ secrets.SLACK_WEBHOOK_URL }}"
+        run: echo "${{ secrets.SLACK_WEBHOOK_URL }}"
           
       - name: Checkout Repository 
         uses: actions/checkout@v2
