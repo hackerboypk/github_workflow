@@ -32,5 +32,21 @@ jobs:
         uses: slackapi/slack-github-action@v1.26.0
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          
+          - name: Notify Slack 
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0  # voxmedia/github-action-slack-notify-build@v1 
+        with: 
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          channel: 'githubAction'
+          fields: job,commit,repo,author 
+          payload: |
+            {
+            "text": "O/P of python script:",
+            "attachment": [
+              {
+                "text": "$(cat script_output.log)"
+              }
+            ]
+          }
       
