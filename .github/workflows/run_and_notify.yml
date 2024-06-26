@@ -30,8 +30,9 @@ jobs:
       - name: Notify Slack 
         if: always() 
         uses: slackapi/slack-github-action@v1.26.0  # voxmedia/github-action-slack-notify-build@v1 
-        with: 
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }} 
+        env: 
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
           status: ${{ job.status }}
           channel: 'githubAction'
           fields: job,commit,repo,author 
