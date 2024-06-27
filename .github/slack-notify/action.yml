@@ -1,1 +1,163 @@
-abab
+name: Slack Notify
+description: Send notification to Slack
+
+inputs:
+  slackWebhookUrl:
+    description: Slack Webhook URL from secrets
+    required: true
+
+  jobName:
+    description: Job name to use in notification title
+    default: ${{ github.workflow }}
+
+  status:
+    description: Status to report, set this to needs.<job-id>.result if Slack Notify is used in a different job
+    default: ${{ job.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: "Get associated event values"
+      id: get-event-values
+      shell: bash
+      run: |
+        case ${{ github.event_name }} in
+          pull_request*)
+            echo "::set-output name=event_name::Pull Request"
+            echo "::set-output name=event_link::${{ github.event.pull_request.html_url }}"
+            echo "::set-output name=branch_name::${{ github.head_ref }}"
+            ;;
+
+          push*)
+            echo "::set-output name=event_name::Push"
+            echo "::set-output name=event_link::${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+            echo "::set-output name=branch_name::$(echo -n ${GITHUB_REF#refs/heads/})"
+            ;;
+
+          release*)
+            echo "::set-output name=event_name::Release"
+            echo "::set-output name=event_link::${{ github.event.release.html_url }}"
+            ;;
+
+          schedule*)
+            echo "::set-output name=event_name::Scheduled Run"
+            echo "::set-output name=event_link::${{ github.server_url }}/${{ github.repository }}"
+            ;;
+
+          workflow_dispatch*)
+            echo "::set-output name=event_name::Workflow Dispatch"
+            echo "::set-output name=event_link::${{ github.server_url }}/${{ github.repository }}"
+            ;;
+
+          # Unknown...
+          *)
+            echo "::set-output name=event_name::Unknown Github Event"
+            echo "::set-output name=event_link::${{ github.server_url }}/${{ github.repository }}"
+            ;;
+        esac
+
+        case ${{ inputs.status }} in
+          failure)
+            echo "::set-output name=event_status::Failed"
+            echo "::set-output name=event_color::#FF0000" # red
+            ;;
+
+          success)
+            echo "::set-output name=event_status::Succeeded"
+            echo "::set-output name=event_color::#00FF00" # green
+            ;;
+
+          cancelled)
+            echo "::set-output name=event_status::Cancelled"
+            echo "::set-output name=event_color::#F0FF00" # yellow
+            ;;
+        esac
+
+        case $(( ${{ github.run_id }} % 3 )) in
+          0)
+            echo "::set-output name=alt_text::Here's a kitten"
+            echo "::set-output name=random_animal::http://placekitten.com/200/200?image=$(shuf -i 0-16 -n 1)"
+            ;;
+
+          [12])
+            echo "::set-output name=alt_text::Have a puppy"
+            echo "::set-output name=random_animal::https://placedog.net/200/200/?id=$(shuf -i 1-236 -n 1)"
+            ;;
+        esac
+
+
+    - name: "Send custom JSON data to Slack workflow"
+      uses: "slackapi/slack-github-action@v1.16.0"
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slackWebhookUrl }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+      with:
+        payload: |
+          {
+            "attachments": [
+              {
+                "color": "${{ steps.get-event-values.outputs.event_color }}",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "${{ inputs.jobName }} ${{ steps.get-event-values.outputs.event_status }}"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Triggered By*\n${{ steps.get-event-values.outputs.event_name }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Author*\n${{ github.actor }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Repo*\n${{ github.event.repository.name }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Branch*\n${{ steps.get-event-values.outputs.branch_name }}"
+                      }
+                    ],
+                    "accessory": {
+                      "type": "image",
+                      "image_url": "${{ steps.get-event-values.outputs.random_animal }}",
+                      "alt_text": "${{ steps.get-event-values.outputs.alt_text }}"
+                    }
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Logs :green_book:",
+                          "emoji": true
+                        },
+                        "value": "click_me_123",
+                        "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      },
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View ${{ steps.get-event-values.outputs.event_name }} :github-7289:",
+                          "emoji": true
+                        },
+                        "value": "click_me_123",
+                        "url": "${{ steps.get-event-values.outputs.event_link }}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+
