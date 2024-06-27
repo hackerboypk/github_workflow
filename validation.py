@@ -1,8 +1,18 @@
 import logging 
 logging.basicConfig(level=logging.INFO) 
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
 
-def main():
-    logger.info("Successfully validated") 
+def post_validation():
+    try:
+        valiation_success = True
+        if validation_success:
+            logger.info("Successfull post validation")
+        else:
+            raise value("Validation failed")
+            
+    except Exception as e:
+        logger.error("post validation failed with exception %s" % e)
+        sys.exit(1)
+ 
 if __name__ == "__main__": 
-    main()
+    post_validation()
