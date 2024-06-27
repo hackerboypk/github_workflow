@@ -42,7 +42,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK    
 
       - name: Send GitHub Action trigger data to Slack workflow in failure
-        if: ${{ failure() }}
+        if: ${{ steps.run_script.conclusion == 'failure'}}
         uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
         with:
           status: ${{ job.status }}
