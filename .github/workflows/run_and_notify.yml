@@ -27,6 +27,16 @@ jobs:
         run: | 
           python validation.py | tee script_output.log
 
+      - name: check for success
+        id: c_s
+        run: |
+          if grep "Successfull" -inr  script_output.log; then
+            exit 0
+          else
+            exit 1
+          fi
+        
+
       - name: Send GitHub Action trigger data to Slack workflow in success
         if: ${{ success() }}
         uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
