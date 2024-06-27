@@ -37,6 +37,9 @@ jobs:
             {
               "text": "O/P of python script: success"
             }
+        env: 
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK    
 
       - name: Send GitHub Action trigger data to Slack workflow in failure
         if: failure()
