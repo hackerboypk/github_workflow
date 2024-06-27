@@ -27,21 +27,26 @@ jobs:
         run: | 
           python validation.py | tee script_output.log
 
-      - name: Send GitHub Action trigger data to Slack workflow
-        if: always()
+      - name: Send GitHub Action trigger data to Slack workflow in success
+        if: success()
         uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
         with:
           status: ${{ job.status }}
           channel: 'githubAction'
-          fields: job,commit,repo,author 
           payload: |
             {
-              "text": "O/P of python script:",
-              "attachment": [
-                {
-                "text": "$(cat script_output.log)"
-                }
-              ]
+              "text": "O/P of python script: success"
+            }
+
+      - name: Send GitHub Action trigger data to Slack workflow in failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
+        with:
+          status: ${{ job.status }}
+          channel: 'githubAction'
+          payload: |
+            {
+              "text": "O/P of python script: failure"
             }
         env: 
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
