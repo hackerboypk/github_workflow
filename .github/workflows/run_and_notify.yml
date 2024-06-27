@@ -30,15 +30,15 @@ jobs:
       - name: check for success
         id: c_s
         run: |
-          if grep "Successfull" -inr  script_output.log; then
-            exit 0
+          if grep "Successfull post validation" script_output.log; then
+            echo "::set-output name = status::success" 
           else
-            exit 1
+            echo "::set-output name = status::failure"
           fi
         
 
       - name: Send GitHub Action trigger data to Slack workflow in success
-        if: ${{ success() }}
+        if: steps.c_s.outputs.status == 'success'
         uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
         with:
           status: ${{ job.status }}
@@ -52,7 +52,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK    
 
       - name: Send GitHub Action trigger data to Slack workflow in failure
-        if: ${{ steps.run_script.conclusion == 'failure'}}
+        if: steps.c_s.outputs.status == 'failure'}
         uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
         with:
           status: ${{ job.status }}
