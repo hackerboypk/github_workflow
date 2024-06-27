@@ -33,7 +33,7 @@ jobs:
           if grep "Successfull post validation" script_output.log; then
             echo "status=success" >> $GITHUB_ENV 
           else
-            echo "status=failure" >> $GITHUB_ENV "
+            echo "status=failure" >> $GITHUB_ENV
           fi
         
 
