@@ -12,6 +12,14 @@ jobs:
           
       - name: Checkout Repository 
         uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3.0.0
+        with:
+          repository: hpe-hcss/gts-actions-lib
+          ref: main
+          ssh-key: ${{ secrets.GTS_ACTIONS_LIB_READ_KEY }}
+          path: ./.github/actions/lib
         
       - name: Set up Python 
         uses: actions/setup-python@v2 
