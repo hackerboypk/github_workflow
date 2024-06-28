@@ -53,7 +53,7 @@ jobs:
 
       - name: Send GitHub Action trigger data to Slack workflow in failure
         if: env.status == 'failure'
-        uses: .github/slack-notify@main   #voxmedia/github-action-slack-notify-build@v1 
+        uses: slackapi/slack-github-action@v1.26.0   
         with:
           status: ${{ job.status }}
           payload: |
