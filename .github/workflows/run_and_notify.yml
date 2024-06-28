@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip  
       
       - name: Run Python Script  
-        id: run-script 
+        id: run_script 
         run: | 
           python validation.py | tee script_output.log
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Send GitHub Action trigger data to Slack workflow in success
         if: env.status == 'success'
-        uses: slackapi/slack-github-action@v1.26.0   #voxmedia/github-action-slack-notify-build@v1 
+        uses: slackapi/slack-github-action@v1.26.0 
         with:
           status: ${{ job.status }}
           channel: 'githubAction'
@@ -56,10 +56,23 @@ jobs:
         uses: .github/slack-notify@main   #voxmedia/github-action-slack-notify-build@v1 
         with:
           status: ${{ job.status }}
-          channel: 'githubAction'
           payload: |
             {
-              "text": "O/P of python script: failure"
+              "channel": 'githubAction',
+              "attachments": [
+                {
+                  "color": "${{ env.status == 'success' && '#36a64f' || '#FF0000' }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "Job *${{ env.status }}* for *${{ github.workflow }}*:\n*<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>*"
+                      }
+                    }
+                  ]
+                }
+              ]
             }
         env: 
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
